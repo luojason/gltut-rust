@@ -1,4 +1,4 @@
-use std::num::NonZeroU32;
+use std::{ffi::CString, num::NonZeroU32};
 
 use glutin::{
     config::ConfigTemplateBuilder,
@@ -61,6 +61,12 @@ fn main() {
 
     // make gl_context current
     let gl_context = gl_context.make_current(&surface).unwrap();
+
+    // load OpenGL function pointers from the initialized context
+    gl::load_with(|s| {
+        let cstr = CString::new(s).unwrap();
+        gl_display.get_proc_address(&cstr)
+    });
 
     // run event loop
     event_loop.run_app(&mut DoNothing).unwrap();

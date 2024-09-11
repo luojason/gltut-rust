@@ -1,0 +1,11 @@
+[package]
+name = "gl_41"
+version = "0.14.0"
+edition = { workspace = true }
+license = "Apache-2.0"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+gl_generator = "0.14.0"

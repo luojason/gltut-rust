@@ -1,7 +1,19 @@
+[workspace]
+members = ["gl_41"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+
+[workspace.dependencies]
+gl = { package = "gl_41", path = "gl_41" }
+
+# Root package declarations
+
 [package]
 name = "opengl-rust-tut"
 version = "0.1.0"
-edition = "2021"
+edition = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,3 +21,4 @@ edition = "2021"
 glutin = "0.32.0"
 glutin-winit = "0.5.0"
 winit = "0.30.0"
+gl = { workspace = true } # internal package used to generate OpenGL bindings
