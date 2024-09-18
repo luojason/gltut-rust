@@ -2,11 +2,15 @@ use std::{ffi::CString, num::NonZeroU32};
 
 use glutin::{
     config::ConfigTemplateBuilder,
-    context::{ContextAttributesBuilder, NotCurrentGlContext},
+    context::{
+        ContextAttributesBuilder, NotCurrentGlContext, PossiblyCurrentContext,
+        PossiblyCurrentGlContext,
+    },
     display::{GetGlDisplay, GlDisplay},
-    surface::{SurfaceAttributesBuilder, WindowSurface},
+    surface::{GlSurface, Surface, SurfaceAttributesBuilder, WindowSurface},
 };
 use glutin_winit::DisplayBuilder;
+use runtime::TriangleExample;
 use winit::{
     application::ApplicationHandler,
     dpi::PhysicalSize,
@@ -16,10 +20,10 @@ use winit::{
     window::{Window, WindowId},
 };
 
-#[allow(unused_variables)]
+mod runtime;
+
 fn main() {
     let event_loop = EventLoop::new().unwrap();
-    event_loop.set_control_flow(ControlFlow::Wait);
 
     let window_attributes = Window::default_attributes()
         .with_inner_size(PhysicalSize::new(1000, 680))
@@ -46,21 +50,23 @@ fn main() {
             .unwrap()
     };
 
-    let attrs = SurfaceAttributesBuilder::<WindowSurface>::new().build(
-        raw_window_handle,
-        NonZeroU32::new(1000).unwrap(),
-        NonZeroU32::new(600).unwrap(),
-    );
+    let attrs = SurfaceAttributesBuilder::<WindowSurface>::new()
+        .with_single_buffer(false)
+        .build(
+            raw_window_handle,
+            NonZeroU32::new(1000).unwrap(),
+            NonZeroU32::new(600).unwrap(),
+        );
 
     let surface = unsafe {
-        gl_config
-            .display()
+        gl_display
             .create_window_surface(&gl_config, &attrs)
             .unwrap()
     };
 
     // make gl_context current
     let gl_context = gl_context.make_current(&surface).unwrap();
+    assert!(gl_context.is_current());
 
     // load OpenGL function pointers from the initialized context
     gl::load_with(|s| {
@@ -68,11 +74,25 @@ fn main() {
         gl_display.get_proc_address(&cstr)
     });
 
+    unsafe {
+        gl::Viewport(0, 0, 1000, 600);
+    }
+
+    let triangles = TriangleExample::new();
+
     // run event loop
-    event_loop.run_app(&mut DoNothing).unwrap();
+    event_loop.set_control_flow(ControlFlow::Wait);
+    event_loop
+        .run_app(&mut DoNothing(triangles, gl_context, surface))
+        .unwrap();
 }
 
-pub struct DoNothing;
+// TODO: clean this up
+pub struct DoNothing(
+    TriangleExample,
+    PossiblyCurrentContext,
+    Surface<WindowSurface>,
+);
 
 impl ApplicationHandler for DoNothing {
     fn resumed(&mut self, _: &ActiveEventLoop) {}
@@ -81,7 +101,12 @@ impl ApplicationHandler for DoNothing {
         match event {
             // stop the application once user closes the window
             WindowEvent::CloseRequested => event_loop.exit(),
+            WindowEvent::RedrawRequested => {
+                self.0.display();
+                // NOTE: swap buffers is important, get doubled buffered even when single buffered is requested
+                self.2.swap_buffers(&self.1).unwrap();
+            }
             _ => (),
-        }
+        };
     }
 }
