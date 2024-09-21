@@ -59,6 +59,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc7eb209b1518d6bb87b283c20095f5228ecda460da70b44f0802523dea6da04"
 
 [[package]]
+name = "anyhow"
+version = "1.0.89"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86fdf8605db99b54d3cd748a44c6d04df638eb5dafb219b135d0149bd0db01f6"
+
+[[package]]
 name = "arrayref"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -369,6 +375,18 @@ dependencies = [
  "khronos_api",
  "log",
  "xml-rs",
+]
+
+[[package]]
+name = "gltut"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "gl_41",
+ "glutin",
+ "glutin-winit",
+ "thiserror",
+ "winit",
 ]
 
 [[package]]
@@ -818,16 +836,6 @@ name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
-
-[[package]]
-name = "opengl-rust-tut"
-version = "0.1.0"
-dependencies = [
- "gl_41",
- "glutin",
- "glutin-winit",
- "winit",
-]
 
 [[package]]
 name = "orbclient"

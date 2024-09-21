@@ -11,7 +11,7 @@ gl = { package = "gl_41", path = "gl_41" }
 # Root package declarations
 
 [package]
-name = "opengl-rust-tut"
+name = "gltut"
 version = "0.1.0"
 edition = { workspace = true }
 
@@ -22,3 +22,6 @@ glutin = "0.32.0"
 glutin-winit = "0.5.0"
 winit = "0.30.0"
 gl = { workspace = true } # internal package used to generate OpenGL bindings
+
+anyhow = "1.0.89" # generic error struct for error reporting
+thiserror = "1.0.63" # concrete/specific error struct generation
