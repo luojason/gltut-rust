@@ -4,12 +4,12 @@ use std::ffi;
 
 use thiserror::Error;
 
-/// Type-safe wrapper over `GLenum` which can only represent valid shader types
+/// Type-safe wrapper over `GLenum` which can only represent valid shader types.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum GlShaderType {
-    /// Maps to ` GL_VERTEX_SHADER`.
+    /// Maps to `GL_VERTEX_SHADER`.
     VERTEX,
-    /// Maps to ` GL_FRAGMENT_SHADER`.
+    /// Maps to `GL_FRAGMENT_SHADER`.
     FRAGMENT,
 }
 
@@ -137,6 +137,11 @@ impl GlProgram {
                 return Err(GlProgramLinkError { msg });
             }
 
+            shaders
+                .iter()
+                .map(GlShader::handle)
+                .for_each(|shader| gl::DetachShader(program, shader));
+
             return Ok(result);
         }
     }
@@ -200,6 +205,7 @@ pub enum GlShaderError {
     CompileError(#[from] GlShaderCompileError),
 }
 
+/// Represents an OpenGL compiler error when compiling a [`GlShader`].
 #[derive(Debug, Error)]
 #[error(
     "compiler error in {} shader: {}",
@@ -211,6 +217,7 @@ pub struct GlShaderCompileError {
     msg: ffi::CString,
 }
 
+/// Represents an OpenGL linker error when linking a [`GlProgram`].
 #[derive(Debug, Error)]
 #[error(
     "linker error: {}",
