@@ -8,6 +8,7 @@ use glutin::{display::GetGlDisplay, surface};
 use winit::{dpi, event_loop, raw_window_handle::HasWindowHandle, window};
 
 pub mod app;
+pub mod glutil;
 
 // Hard-coded constants for simplicity
 const WIDTH: NonZeroU32 = unsafe { NonZeroU32::new_unchecked(1000) };

@@ -1,7 +1,7 @@
 //! This module contains the implementation of most of the initialization,
 //! rendering and display logic used during runtime.
 
-use std::ffi::CString;
+use gltut::glutil::{GlProgram, GlShader, GlShaderType};
 
 /// Positions of the triangle vertices in homogeneous coordinates.
 #[rustfmt::skip]
@@ -17,7 +17,7 @@ const FRAG_SHADER: &'static str = include_str!("./shaders/triangle_example.frag"
 /// Basic struct holding the OpenGL handles needed to represent and render a triangle.
 pub struct TriangleExample {
     position_buf_object: gl::types::GLuint,
-    program: gl::types::GLuint,
+    program: GlProgram,
 }
 
 impl TriangleExample {
@@ -43,7 +43,7 @@ impl TriangleExample {
             gl::ClearColor(0.0, 0.0, 0.0, 0.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
-            gl::UseProgram(self.program);
+            gl::UseProgram(self.program.handle());
 
             gl::BindBuffer(gl::ARRAY_BUFFER, self.position_buf_object);
             gl::EnableVertexAttribArray(0);
@@ -74,66 +74,13 @@ fn init_vertex_buffer(vtx_data: &[f32]) -> gl::types::GLuint {
     return position_buf_object;
 }
 
-fn init_program() -> gl::types::GLuint {
+fn init_program() -> GlProgram {
     let mut shader_list = Vec::with_capacity(2);
-    shader_list.push(create_shader(gl::VERTEX_SHADER, VERT_SHADER));
-    shader_list.push(create_shader(gl::FRAGMENT_SHADER, FRAG_SHADER));
+    shader_list.push(GlShader::compile_unwrap(GlShaderType::VERTEX, VERT_SHADER));
+    shader_list.push(GlShader::compile_unwrap(
+        GlShaderType::FRAGMENT,
+        FRAG_SHADER,
+    ));
 
-    let program = create_program(&shader_list);
-
-    shader_list
-        .into_iter()
-        .for_each(|shader| unsafe { gl::DeleteShader(shader) });
-
-    return program;
-}
-
-fn create_shader(shader_type: gl::types::GLenum, shader_def: &str) -> gl::types::GLuint {
-    unsafe {
-        let shader = gl::CreateShader(shader_type);
-        // TODO: error handling for bad CString conversion
-        let shader_def = CString::new(shader_def).unwrap();
-        gl::ShaderSource(shader, 1, &shader_def.as_ptr(), std::ptr::null());
-
-        gl::CompileShader(shader);
-
-        // TODO: error handling on GL compilation status
-
-        return shader;
-    }
-}
-
-fn create_program(shader_list: &[gl::types::GLuint]) -> gl::types::GLuint {
-    unsafe {
-        let program = gl::CreateProgram();
-        shader_list
-            .iter()
-            .for_each(|&shader| gl::AttachShader(program, shader));
-        gl::LinkProgram(program);
-
-        // TODO: clean-up error handling on GL linking status
-        let mut status = 0;
-        gl::GetProgramiv(program, gl::LINK_STATUS, &mut status);
-        if status == gl::FALSE.into() {
-            let mut length = 0;
-            gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut length);
-            println!("message length: {}", length);
-
-            let mut info_log: Vec<gl::types::GLchar> = [0].repeat((length).try_into().unwrap());
-            gl::GetProgramInfoLog(program, length, std::ptr::null_mut(), info_log.as_mut_ptr());
-
-            println!("c_str message: {:?}", info_log);
-            // TODO: can use "from_raw_parts" conversion for this
-            let info_log = info_log.into_iter().map(|v| v as u8).collect::<Vec<_>>();
-            let info_log = CString::from_vec_with_nul(info_log).expect("convert to c_str");
-            let info_str = info_log.clone().into_string().expect("convert to str");
-            println!("utf8 string message: {}", info_str);
-        }
-
-        shader_list
-            .iter()
-            .for_each(|&shader| gl::DetachShader(program, shader));
-
-        return program;
-    }
+    return GlProgram::link_unwrap(&shader_list);
 }
