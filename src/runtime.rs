@@ -54,9 +54,6 @@ impl TriangleExample {
             // cleanup
             gl::DisableVertexAttribArray(0);
             gl::UseProgram(0);
-
-            // render output to screen
-            gl::Flush();
         }
     }
 }
