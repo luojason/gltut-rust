@@ -5,42 +5,73 @@ use glutin::{
     context::PossiblyCurrentContext,
     surface::{GlSurface, Surface, WindowSurface},
 };
+use glutin_winit::GlWindow;
+use winit::dpi::LogicalSize;
+use winit::window::Window;
 use winit::{application::ApplicationHandler, event::WindowEvent};
 
 /// A helper struct for building a [`GlApp`].
-pub struct GlAppBuilder<T> {
-    display_fn: T,
+pub struct GlAppBuilder<T1, T2> {
+    display_fn: T1,
+    reshape_fn: T2,
 }
 
 fn do_nothing() {}
 
-impl GlAppBuilder<()> {
+// TODO: see if physical or logical size makes more sense here
+fn set_gl_viewport(size: &LogicalSize<u32>) {
+    unsafe {
+        // NOTE: not sure if this glViewport is actually doing anything
+        // or if GlWindow::resize_surface already handles everything
+        gl::Viewport(
+            0,
+            0,
+            size.width as gl::types::GLsizei,
+            size.height as gl::types::GLsizei,
+        );
+    }
+}
+
+impl GlAppBuilder<(), ()> {
     /// Initialize builder with default callbacks.
     ///
     /// Generally the default callbacks do nothing.
-    pub fn new() -> GlAppBuilder<impl FnMut()> {
+    pub fn new() -> GlAppBuilder<impl FnMut(), impl FnMut(&LogicalSize<u32>)> {
         GlAppBuilder {
             display_fn: do_nothing,
+            reshape_fn: set_gl_viewport,
         }
     }
 }
 
-impl<T> GlAppBuilder<T> {
+impl<T1, T2> GlAppBuilder<T1, T2> {
     /// Set a custom `display` callback. See [`GlApp`] for details.
-    pub fn with_display<F: FnMut()>(self, display: F) -> GlAppBuilder<F> {
+    pub fn with_display<F: FnMut()>(self, display: F) -> GlAppBuilder<F, T2> {
         GlAppBuilder {
             display_fn: display,
+            reshape_fn: self.reshape_fn,
+        }
+    }
+
+    /// Set a custom `reshape` callback. See [`GlApp`] for details.
+    pub fn with_reshape<F: FnMut(&LogicalSize<u32>)>(self, reshape: F) -> GlAppBuilder<T1, F> {
+        GlAppBuilder {
+            display_fn: self.display_fn,
+            reshape_fn: reshape,
         }
     }
 
     /// Build the [`GlApp`].
     pub fn build(
         self,
+        window: Window,
         context: PossiblyCurrentContext,
         surface: Surface<WindowSurface>,
-    ) -> GlApp<T> {
+    ) -> GlApp<T1, T2> {
         GlApp {
             display_fn: self.display_fn,
+            reshape_fn: self.reshape_fn,
+            window,
             context,
             surface,
         }
@@ -52,17 +83,21 @@ impl<T> GlAppBuilder<T> {
 ///
 /// The callbacks are:
 ///  - `display`: Called when a window redraw is requested, for doing any rendering/updates needed.
+///  - `reshape`: Called when the window has been resized, for adjusting the OpenGL viewport and the like.
 ///
 /// Construct a `GlApp` using [`GlAppBuilder::new()`].
-pub struct GlApp<T> {
-    display_fn: T,
+pub struct GlApp<T1, T2> {
+    display_fn: T1,
+    reshape_fn: T2,
+    window: Window,
     context: PossiblyCurrentContext,
     surface: Surface<WindowSurface>,
 }
 
-impl<T> ApplicationHandler for GlApp<T>
+impl<T1, T2> ApplicationHandler for GlApp<T1, T2>
 where
-    T: FnMut(),
+    T1: FnMut(),
+    T2: FnMut(&LogicalSize<u32>),
 {
     fn resumed(&mut self, _: &winit::event_loop::ActiveEventLoop) {}
 
@@ -83,10 +118,15 @@ where
                 unsafe {
                     gl::Flush();
                 }
+                self.window.pre_present_notify();
                 // NOTE: swap buffers is important, can get get doubled buffered surface even when single buffered is requested
                 self.surface
                     .swap_buffers(&self.context)
                     .expect("failed to swap GLSurface buffers");
+            }
+            WindowEvent::Resized(size) => {
+                self.window.resize_surface(&self.surface, &self.context);
+                (self.reshape_fn)(&size.to_logical(self.window.scale_factor()));
             }
             _ => (),
         };

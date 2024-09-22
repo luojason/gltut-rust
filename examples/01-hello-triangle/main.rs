@@ -3,13 +3,13 @@ use gltut::glutil::{GlProgram, GlShader, GlShaderType};
 use anyhow::Context;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // SAFETY: do not drop _window
-    let (event_loop, _window, gl_context, surface) = unsafe { gltut::init_window_and_context()? };
+    // SAFETY: do not drop window
+    let (event_loop, window, gl_context, surface) = unsafe { gltut::init_window_and_context()? };
     let triangles = TriangleExample::new();
 
     let mut app = gltut::app::GlAppBuilder::new()
         .with_display(|| triangles.display())
-        .build(gl_context, surface);
+        .build(window, gl_context, surface);
 
     // run event loop
     event_loop
