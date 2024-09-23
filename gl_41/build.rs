@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// extern crate gl_generator;
+// Changes w.r.t. source work:
+//  - fixed registry version to 4.1
 
 use gl_generator::{Api, Fallbacks, GlobalGenerator, Profile, Registry};
 use std::env;
@@ -24,6 +25,8 @@ fn main() {
     let mut file = File::create(&Path::new(&dest).join("bindings.rs")).unwrap();
 
     // set version to 4.1
+    // TODO: check out extensions ["GL_KHR_debug", "GL_ARB_debug_output"]
+    //   if we ever trying building these on a non-MacOS system.
     Registry::new(Api::Gl, (4, 1), Profile::Core, Fallbacks::All, [])
         .write_bindings(GlobalGenerator, &mut file)
         .unwrap();
