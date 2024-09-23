@@ -1,3 +1,4 @@
+use gltut::glutil;
 use gltut::glutil::{GlProgram, GlShader, GlShaderType};
 
 use anyhow::Context;
@@ -39,7 +40,7 @@ pub struct TriangleExample {
 impl TriangleExample {
     pub fn new() -> Self {
         let program = init_program();
-        let position_buf_object = init_vertex_buffer(&VTX_POSITIONS);
+        let position_buf_object = glutil::init_vertex_buffer(&VTX_POSITIONS);
 
         // NOTE: this is important for some reason
         unsafe {
@@ -72,22 +73,6 @@ impl TriangleExample {
             gl::UseProgram(0);
         }
     }
-}
-
-fn init_vertex_buffer(vtx_data: &[f32]) -> gl::types::GLuint {
-    let mut position_buf_object = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut position_buf_object);
-        gl::BindBuffer(gl::ARRAY_BUFFER, position_buf_object);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            std::mem::size_of_val(vtx_data).try_into().unwrap(),
-            vtx_data.as_ptr() as *const gl::types::GLvoid,
-            gl::STATIC_DRAW,
-        );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-    }
-    return position_buf_object;
 }
 
 fn init_program() -> GlProgram {
