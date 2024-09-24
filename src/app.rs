@@ -1,6 +1,7 @@
 //! Contains the standard structure for defining an [`ApplicationHandler`]
 //! to feed the [`EventLoop`](winit::event_loop::EventLoop).
 
+use gl::types::*;
 use glutin::{
     context::PossiblyCurrentContext,
     surface::{GlSurface, Surface, WindowSurface},
@@ -23,12 +24,7 @@ fn set_gl_viewport(size: &LogicalSize<u32>) {
     unsafe {
         // NOTE: not sure if this glViewport is actually doing anything
         // or if GlWindow::resize_surface already handles everything
-        gl::Viewport(
-            0,
-            0,
-            size.width as gl::types::GLsizei,
-            size.height as gl::types::GLsizei,
-        );
+        gl::Viewport(0, 0, size.width as GLsizei, size.height as GLsizei);
     }
 }
 

@@ -2,6 +2,7 @@
 
 use std::ffi;
 
+use gl::types::*;
 use thiserror::Error;
 
 /// Type-safe wrapper over `GLenum` which can only represent valid shader types.
@@ -15,7 +16,7 @@ pub enum GlShaderType {
 
 impl GlShaderType {
     /// Convert to the underlying `GLenum` value.
-    pub const fn value(&self) -> gl::types::GLenum {
+    pub const fn value(&self) -> GLenum {
         match self {
             GlShaderType::VERTEX => gl::VERTEX_SHADER,
             GlShaderType::FRAGMENT => gl::FRAGMENT_SHADER,
@@ -28,7 +29,7 @@ impl GlShaderType {
 /// It represents a uniquely owned shader, hence is not [`Copy`] or [`Clone`].
 #[derive(Debug)]
 pub struct GlShader {
-    id: gl::types::GLuint,
+    id: GLuint,
 }
 
 impl GlShader {
@@ -67,20 +68,20 @@ impl GlShader {
 
     /// Get the `GLuint` this struct is wrapping.
     #[inline]
-    pub fn handle(&self) -> gl::types::GLuint {
+    pub fn handle(&self) -> GLuint {
         self.id
     }
 
     /// Helper function to call `glGetShaderInfoLog` and allocate space to store the string.
     pub fn get_shader_info_log(&self) -> ffi::CString {
-        let mut length: gl::types::GLint = 0;
+        let mut length: GLint = 0;
 
         unsafe {
             gl::GetShaderiv(self.id, gl::INFO_LOG_LENGTH, &mut length);
         }
 
         // Allocate buffer and populate it with the log
-        let mut info_log: Vec<gl::types::GLchar> = vec![0; length as usize];
+        let mut info_log: Vec<GLchar> = vec![0; length as usize];
         unsafe {
             gl::GetShaderInfoLog(self.id, length, std::ptr::null_mut(), info_log.as_mut_ptr());
         }
@@ -112,7 +113,7 @@ impl Drop for GlShader {
 ///
 /// It represents a uniquely owned program, hence is not [`Copy`] or [`Clone`].
 pub struct GlProgram {
-    id: gl::types::GLuint,
+    id: GLuint,
 }
 
 impl GlProgram {
@@ -155,20 +156,20 @@ impl GlProgram {
 
     /// Get the `GLuint` this struct is wrapping.
     #[inline]
-    pub fn handle(&self) -> gl::types::GLuint {
+    pub fn handle(&self) -> GLuint {
         self.id
     }
 
     /// Helper function to call `glGetProgramInfoLog` and allocate space to store the string.
     pub fn get_program_info_log(&self) -> ffi::CString {
-        let mut length: gl::types::GLint = 0;
+        let mut length: GLint = 0;
 
         unsafe {
             gl::GetProgramiv(self.id, gl::INFO_LOG_LENGTH, &mut length);
         }
 
         // Allocate buffer and populate it with the log
-        let mut info_log: Vec<gl::types::GLchar> = vec![0; length as usize];
+        let mut info_log: Vec<GLchar> = vec![0; length as usize];
         unsafe {
             gl::GetProgramInfoLog(self.id, length, std::ptr::null_mut(), info_log.as_mut_ptr());
         }
@@ -213,7 +214,7 @@ pub enum GlShaderError {
     .msg.to_string_lossy()
 )]
 pub struct GlShaderCompileError {
-    shader_type: gl::types::GLenum,
+    shader_type: GLenum,
     msg: ffi::CString,
 }
 
@@ -228,7 +229,7 @@ pub struct GlProgramLinkError {
 }
 
 #[inline]
-const fn get_shader_type(shader_type: gl::types::GLenum) -> &'static str {
+const fn get_shader_type(shader_type: GLenum) -> &'static str {
     match shader_type {
         gl::VERTEX_SHADER => "vertex",
         gl::GEOMETRY_SHADER => "geometry",

@@ -1,3 +1,4 @@
+use gl::types::*;
 use gltut::glutil;
 use gltut::glutil::{GlProgram, GlShader, GlShaderType};
 
@@ -33,7 +34,7 @@ const FRAG_SHADER: &'static str = include_str!("./shaders/triangle_example.frag"
 
 /// Basic struct holding the OpenGL handles needed to represent and render a triangle.
 pub struct TriangleExample {
-    position_buf_object: gl::types::GLuint,
+    position_buf_object: GLuint,
     program: GlProgram,
 }
 
@@ -64,7 +65,7 @@ impl TriangleExample {
 
             gl::BindBuffer(gl::ARRAY_BUFFER, self.position_buf_object);
             gl::EnableVertexAttribArray(0);
-            gl::VertexAttribPointer(0, 4, gl::FLOAT, gl::FALSE, 0, 0 as *const gl::types::GLvoid);
+            gl::VertexAttribPointer(0, 4, gl::FLOAT, gl::FALSE, 0, 0 as *const GLvoid);
 
             gl::DrawArrays(gl::TRIANGLES, 0, 3);
 
