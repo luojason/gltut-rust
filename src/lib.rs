@@ -11,8 +11,8 @@ pub mod app;
 pub mod glutil;
 
 // Hard-coded constants for simplicity
-const WIDTH: NonZeroU32 = unsafe { NonZeroU32::new_unchecked(1000) };
-const HEIGHT: NonZeroU32 = unsafe { NonZeroU32::new_unchecked(680) };
+const WIDTH: NonZeroU32 = unsafe { NonZeroU32::new_unchecked(800) };
+const HEIGHT: NonZeroU32 = unsafe { NonZeroU32::new_unchecked(800) };
 
 /// Initializes a window with an OpenGL context.
 ///
