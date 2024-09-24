@@ -21,6 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             render_ygrad();
             render_tricolor();
         })
+        .with_reshape(centered_reshape)
         .build(window, gl_context, surface);
 
     // run event loop
@@ -29,6 +30,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .context("failed to start event_loop")?;
 
     Ok(())
+}
+
+/// Set viewport to the largest centered square box that can fit in the window dimensions
+fn centered_reshape(size: &winit::dpi::LogicalSize<u32>) {
+    let length;
+    let (mut x, mut y) = (0, 0);
+
+    if size.width < size.height {
+        length = size.width as i32;
+        y = std::cmp::max(0, ((size.height - size.width) / 2) as i32);
+    } else {
+        length = size.height as i32;
+        x = std::cmp::max(0, ((size.width - size.height) / 2) as i32);
+    }
+
+    unsafe {
+        gl::Viewport(x, y, length, length);
+    }
 }
 
 const YGRAD_VERT_SHADER: &'static str = include_str!("./shaders/identity.vert");
