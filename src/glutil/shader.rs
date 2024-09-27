@@ -1,28 +1,11 @@
 //! Contains wrappers and methods for handling OpenGL shader and program objects.
 
+use super::types::*;
+
 use std::ffi;
 
 use gl::types::*;
 use thiserror::Error;
-
-/// Type-safe wrapper over `GLenum` which can only represent valid shader types.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GlShaderType {
-    /// Maps to `GL_VERTEX_SHADER`.
-    VERTEX,
-    /// Maps to `GL_FRAGMENT_SHADER`.
-    FRAGMENT,
-}
-
-impl GlShaderType {
-    /// Convert to the underlying `GLenum` value.
-    pub const fn value(&self) -> GLenum {
-        match self {
-            GlShaderType::VERTEX => gl::VERTEX_SHADER,
-            GlShaderType::FRAGMENT => gl::FRAGMENT_SHADER,
-        }
-    }
-}
 
 /// An RAII struct managing the lifetime of a shader object.
 ///

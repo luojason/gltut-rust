@@ -1,6 +1,7 @@
 use gl::types::*;
 use gltut::glutil;
-use gltut::glutil::{GlProgram, GlShader, GlShaderType};
+use gltut::glutil::types::*;
+use gltut::glutil::{GlProgram, GlShader};
 
 use anyhow::Context;
 
@@ -41,7 +42,8 @@ pub struct TriangleExample {
 impl TriangleExample {
     pub fn new() -> Self {
         let program = init_program();
-        let position_buf_object = glutil::init_vertex_buffer(&VTX_POSITIONS);
+        let position_buf_object =
+            glutil::init_vertex_buffer(&VTX_POSITIONS, GlBufUsage::StaticDraw);
 
         // NOTE: this is important for some reason
         unsafe {
@@ -78,9 +80,9 @@ impl TriangleExample {
 
 fn init_program() -> GlProgram {
     let mut shader_list = Vec::with_capacity(2);
-    shader_list.push(GlShader::compile_unwrap(GlShaderType::VERTEX, VERT_SHADER));
+    shader_list.push(GlShader::compile_unwrap(GlShaderType::Vertex, VERT_SHADER));
     shader_list.push(GlShader::compile_unwrap(
-        GlShaderType::FRAGMENT,
+        GlShaderType::Fragment,
         FRAG_SHADER,
     ));
 

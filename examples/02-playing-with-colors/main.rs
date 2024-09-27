@@ -1,5 +1,6 @@
 use gltut::glutil;
-use gltut::glutil::{GlProgram, GlShader, GlShaderType};
+use gltut::glutil::types::*;
+use gltut::glutil::{GlProgram, GlShader};
 
 use anyhow::Context;
 use gl::types::*;
@@ -81,11 +82,11 @@ fn get_ygrad_render_fn() -> impl Fn() {
 fn init_ygrad_program() -> GlProgram {
     let mut shader_list = Vec::with_capacity(2);
     shader_list.push(GlShader::compile_unwrap(
-        GlShaderType::VERTEX,
+        GlShaderType::Vertex,
         YGRAD_VERT_SHADER,
     ));
     shader_list.push(GlShader::compile_unwrap(
-        GlShaderType::FRAGMENT,
+        GlShaderType::Fragment,
         YGRAD_FRAG_SHADER,
     ));
 
@@ -93,7 +94,7 @@ fn init_ygrad_program() -> GlProgram {
 }
 
 fn init_ygrad_vao() -> GLuint {
-    let position_buf_object = glutil::init_vertex_buffer(&YGRAD_VTX_DATA);
+    let position_buf_object = glutil::init_vertex_buffer(&YGRAD_VTX_DATA, GlBufUsage::StaticDraw);
     let mut vao = 0;
     unsafe {
         gl::GenVertexArrays(1, &mut vao);
@@ -145,11 +146,11 @@ fn get_tricolor_render_fn() -> impl Fn() {
 fn init_tricolor_program() -> GlProgram {
     let mut shader_list = Vec::with_capacity(2);
     shader_list.push(GlShader::compile_unwrap(
-        GlShaderType::VERTEX,
+        GlShaderType::Vertex,
         &TRICOLOR_VERT_SHADER,
     ));
     shader_list.push(GlShader::compile_unwrap(
-        GlShaderType::FRAGMENT,
+        GlShaderType::Fragment,
         &TRICOLOR_FRAG_SHADER,
     ));
 
@@ -157,7 +158,7 @@ fn init_tricolor_program() -> GlProgram {
 }
 
 fn init_tricolor_vao() -> GLuint {
-    let vertex_buf_object = glutil::init_vertex_buffer(&TRICOLOR_VTX_DATA);
+    let vertex_buf_object = glutil::init_vertex_buffer(&TRICOLOR_VTX_DATA, GlBufUsage::StaticDraw);
     let mut vao = 0;
     unsafe {
         gl::GenVertexArrays(1, &mut vao);
