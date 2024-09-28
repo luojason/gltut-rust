@@ -41,11 +41,7 @@ pub unsafe fn init_window_and_context() -> Result<
     let template_builder = glutin::config::ConfigTemplateBuilder::new().with_alpha_size(8);
     let (window, gl_config) = glutin_winit::DisplayBuilder::new()
         .with_window_attributes(Some(window_attr))
-        .build(&event_loop, template_builder, |mut configs| {
-            configs
-                .next()
-                .expect("at least one matching GL config should exist")
-        })?;
+        .build(&event_loop, template_builder, gl_config_picker)?;
     let window = window.ok_or(anyhow!(
         "window not initialized immediately, may need finalize_window for this platform"
     ))?;
@@ -99,4 +95,23 @@ pub unsafe fn init_window_and_context() -> Result<
     });
 
     Ok((event_loop, window, gl_context, surface))
+}
+
+// Copied from https://github.com/rust-windowing/glutin/blob/master/glutin_examples/src/lib.rs
+/// Selects the config with the highest sample count which supports transparency
+fn gl_config_picker(
+    configs: Box<dyn Iterator<Item = glutin::config::Config> + '_>,
+) -> glutin::config::Config {
+    configs
+        .reduce(|accum, config| {
+            let transparency_check = config.supports_transparency().unwrap_or(false)
+                & !accum.supports_transparency().unwrap_or(false);
+
+            if transparency_check || config.num_samples() > accum.num_samples() {
+                config
+            } else {
+                accum
+            }
+        })
+        .expect("at least one matching GL config should exist")
 }
