@@ -7,7 +7,7 @@ use glutin::{
     surface::{GlSurface, Surface, WindowSurface},
 };
 use glutin_winit::GlWindow;
-use winit::dpi::LogicalSize;
+use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use winit::{application::ApplicationHandler, event::WindowEvent};
 
@@ -19,8 +19,8 @@ pub struct GlAppBuilder<T1, T2> {
 
 fn do_nothing() {}
 
-// TODO: see if physical or logical size makes more sense here
-fn set_gl_viewport(size: &LogicalSize<u32>) {
+// glViewport takes physical pixel coordinates, so using PhysicalSize
+fn set_gl_viewport(size: &PhysicalSize<u32>) {
     unsafe {
         // NOTE: not sure if this glViewport is actually doing anything
         // or if GlWindow::resize_surface already handles everything
@@ -32,7 +32,7 @@ impl GlAppBuilder<(), ()> {
     /// Initialize builder with default callbacks.
     ///
     /// Generally the default callbacks do nothing.
-    pub fn new() -> GlAppBuilder<impl FnMut(), impl FnMut(&LogicalSize<u32>)> {
+    pub fn new() -> GlAppBuilder<impl FnMut(), impl FnMut(&PhysicalSize<u32>)> {
         GlAppBuilder {
             display_fn: do_nothing,
             reshape_fn: set_gl_viewport,
@@ -50,7 +50,7 @@ impl<T1, T2> GlAppBuilder<T1, T2> {
     }
 
     /// Set a custom `reshape` callback. See [`GlApp`] for details.
-    pub fn with_reshape<F: FnMut(&LogicalSize<u32>)>(self, reshape: F) -> GlAppBuilder<T1, F> {
+    pub fn with_reshape<F: FnMut(&PhysicalSize<u32>)>(self, reshape: F) -> GlAppBuilder<T1, F> {
         GlAppBuilder {
             display_fn: self.display_fn,
             reshape_fn: reshape,
@@ -93,7 +93,7 @@ pub struct GlApp<T1, T2> {
 impl<T1, T2> ApplicationHandler for GlApp<T1, T2>
 where
     T1: FnMut(),
-    T2: FnMut(&LogicalSize<u32>),
+    T2: FnMut(&PhysicalSize<u32>),
 {
     fn resumed(&mut self, _: &winit::event_loop::ActiveEventLoop) {}
 
@@ -122,7 +122,7 @@ where
             }
             WindowEvent::Resized(size) => {
                 self.window.resize_surface(&self.surface, &self.context);
-                (self.reshape_fn)(&size.to_logical(self.window.scale_factor()));
+                (self.reshape_fn)(&size);
             }
             _ => (),
         };

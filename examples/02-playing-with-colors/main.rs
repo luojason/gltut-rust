@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// Set viewport to the largest centered square box that can fit in the window dimensions
-fn centered_reshape(size: &winit::dpi::LogicalSize<u32>) {
+fn centered_reshape(size: &winit::dpi::PhysicalSize<u32>) {
     let length;
     let (mut x, mut y) = (0, 0);
 
